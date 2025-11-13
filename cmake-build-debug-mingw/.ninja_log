@@ -1,0 +1,17 @@
+# ninja log v6
+68	3524	7847481160803727	CMakeFiles/GDItest.dir/main.cpp.obj	6c1b080f98cf428b
+79	4096	7847481160913376	CMakeFiles/GDItest.dir/graphics.cpp.obj	8ce814e99579fb3d
+4096	4692	7847481201075272	GDItest.exe	f7152d217856fd90
+45	4639	7847497160438307	CMakeFiles/GDItest.dir/src/appcore/GraphicsApp.cpp.obj	5c4f4689d2fa852a
+67	896	7847503287316671	build.ninja	380d1766dc695e1
+414	5198	7847497164131123	CMakeFiles/GDItest.dir/src/ui/UIComponents.cpp.obj	552b3a7a004bb0e7
+148	4537	7847497161458885	CMakeFiles/GDItest.dir/src/graphics/ExistingGraphics.cpp.obj	964a0aabff36ac58
+82	3611	7847501277344396	CMakeFiles/GDItest.dir/src/ui/TabManager.cpp.obj	4b7d3e662429d939
+89	5357	7847497160876771	CMakeFiles/GDItest.dir/src/graphics/DrawingAlgorithms.cpp.obj	3f3894909699476
+62	3388	7847498494670966	CMakeFiles/GDItest.dir/src/main.cpp.obj	7bf202046ea4e5c9
+97	4094	7847501277481758	CMakeFiles/GDItest.dir/src/graphics/InteractiveGraphics.cpp.obj	b2a19862f50403b5
+4094	4536	7847501317465763	bin/GDItest.exe	24a82abe90845e97
+93	4143	7847503569993859	CMakeFiles/GDItest.dir/src/graphics/GraphicsManager.cpp.obj	f4a51d80b8b1f482
+77	4092	7847505084569846	CMakeFiles/GDItest.dir/src/ui/UIComponents.cpp.obj	552b3a7a004bb0e7
+91	4277	7847505084709894	CMakeFiles/GDItest.dir/src/graphics/InteractiveGraphics.cpp.obj	b2a19862f50403b5
+4277	4776	7847505126553226	bin/GDItest.exe	7e0145581f655ed0
