@@ -1,5 +1,6 @@
 #include "DrawingAlgorithms.h"
 #include <cmath>
+#include <algorithm>
 
 // 全局绘制颜色
 COLORREF g_drawColor = RGB(0, 0, 0);
@@ -121,33 +122,85 @@ void DrawPolyline(HDC hdc, const std::vector<Point>& points) {
     }
 }
 
+// 计算B样条基函数
+double BSplineBasis(int i, int k, double t, const std::vector<double>& knots) {
+    if (k == 0) {
+        return (t >= knots[i] && t < knots[i + 1]) ? 1.0 : 0.0;
+    }
+
+    double denom1 = knots[i + k] - knots[i];
+    double denom2 = knots[i + k + 1] - knots[i + 1];
+
+    double term1 = 0.0;
+    double term2 = 0.0;
+
+    if (denom1 != 0.0) {
+        term1 = ((t - knots[i]) / denom1) * BSplineBasis(i, k - 1, t, knots);
+    }
+
+    if (denom2 != 0.0) {
+        term2 = ((knots[i + k + 1] - t) / denom2) * BSplineBasis(i + 1, k - 1, t, knots);
+    }
+
+    return term1 + term2;
+}
+
+// 生成均匀节点向量
+std::vector<double> GenerateUniformKnots(int n, int k) {
+    std::vector<double> knots(n + k + 1);
+    for (int i = 0; i <= n + k; i++) {
+        knots[i] = static_cast<double>(i);
+    }
+    return knots;
+}
+
 // 绘制B样条曲线
 void DrawBSpline(HDC hdc, const std::vector<Point>& points) {
-    // B样条曲线实现（简化版本）
-    if (points.size() < 4) return;
+    if (points.size() < 4) {
+        // 如果控制点太少，直接绘制折线
+        DrawPolyline(hdc, points);
+        return;
+    }
 
-    // 这里实现一个简单的B样条曲线算法
-    for (size_t i = 0; i < points.size() - 3; i++) {
-        const Point& p0 = points[i];
-        const Point& p1 = points[i + 1];
-        const Point& p2 = points[i + 2];
-        const Point& p3 = points[i + 3];
+    int n = points.size() - 1;  // 控制点索引从0到n
+    int k = 3;                  // 3次B样条（最常用）
 
-        // 简化的B样条绘制
-        MoveToEx(hdc, (p0.x + 4 * p1.x + p2.x) / 6, (p0.y + 4 * p1.y + p2.y) / 6, NULL);
-        for (double t = 0; t <= 1; t += 0.05) {
-            double t2 = t * t;
-            double t3 = t2 * t;
-            
-            double b0 = (-t3 + 3 * t2 - 3 * t + 1) / 6.0;
-            double b1 = (3 * t3 - 6 * t2 + 4) / 6.0;
-            double b2 = (-3 * t3 + 3 * t2 + 3 * t + 1) / 6.0;
-            double b3 = t3 / 6.0;
-            
-            int x = static_cast<int>(b0 * p0.x + b1 * p1.x + b2 * p2.x + b3 * p3.x);
-            int y = static_cast<int>(b0 * p0.y + b1 * p1.y + b2 * p2.y + b3 * p3.y);
-            
-            LineTo(hdc, x, y);
+    // 生成均匀节点向量
+    std::vector<double> knots = GenerateUniformKnots(n, k);
+
+    // 设置曲线精度
+    const int segments = 100;
+    bool firstPoint = true;
+    int lastX = 0, lastY = 0;
+
+    // 计算参数t的范围
+    double t_min = knots[k];
+    double t_max = knots[n + 1];
+    double t_step = (t_max - t_min) / segments;
+
+    for (int s = 0; s <= segments; s++) {
+        double t = t_min + s * t_step;
+
+        double x = 0.0, y = 0.0;
+
+        // 计算曲线上的点
+        for (int i = 0; i <= n; i++) {
+            double basis = BSplineBasis(i, k, t, knots);
+            x += points[i].x * basis;
+            y += points[i].y * basis;
         }
+
+        int currentX = static_cast<int>(x + 0.5);
+        int currentY = static_cast<int>(y + 0.5);
+
+        if (!firstPoint) {
+            // 使用Bresenham算法绘制线段，使曲线更平滑
+            DrawLineBresenham(hdc, lastX, lastY, currentX, currentY);
+        } else {
+            firstPoint = false;
+        }
+
+        lastX = currentX;
+        lastY = currentY;
     }
 }

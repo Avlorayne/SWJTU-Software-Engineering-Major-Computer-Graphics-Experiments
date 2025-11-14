@@ -25,6 +25,26 @@ public:
     // 模式切换
     void SwitchMode(DrawMode newMode);
 
+    // 获取所有图形的引用
+    const std::vector<GraphicShape>& GetShapes() const {
+        return m_shapes;
+    }
+
+    // 或者获取拷贝（如果需要修改）
+    std::vector<GraphicShape> GetShapes() {
+        return m_shapes;
+    }
+
+    // 添加图形
+    void AddShape(const GraphicShape& shape) {
+        m_shapes.push_back(shape);
+    }
+
+    // 清空所有图形
+    void ClearShapes() {
+        m_shapes.clear();
+    }
+
 private:
     GraphicsManager() = default;
     

@@ -19,15 +19,16 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 # 添加所有源文件（修正路径）
 add_executable(GDItest
         ${CMAKE_SOURCE_DIR}/src/main.cpp
-        ${CMAKE_SOURCE_DIR}/src/appcore/GraphicsApp.cpp  # 修正为 appcore
+        ${CMAKE_SOURCE_DIR}/src/appcore/GraphicsApp.cpp
         ${CMAKE_SOURCE_DIR}/src/ui/TabManager.cpp
         ${CMAKE_SOURCE_DIR}/src/ui/UIComponents.cpp
         ${CMAKE_SOURCE_DIR}/src/graphics/ExistingGraphics.cpp
         ${CMAKE_SOURCE_DIR}/src/graphics/InteractiveGraphics.cpp
         ${CMAKE_SOURCE_DIR}/src/graphics/DrawingAlgorithms.cpp
-        src/graphics/GraphicsManager.cpp
-        src/graphics/GraphicsManager.h
+        ${CMAKE_SOURCE_DIR}/src/graphics/GraphicsManager.cpp
+        ${CMAKE_SOURCE_DIR}/src/graphics/FillAlgorithms.cpp  # 新增填充算法文件
 )
+
 
 # 链接必要的Windows库和数学库
 target_link_libraries(GDItest kernel32 user32 gdi32 comctl32)

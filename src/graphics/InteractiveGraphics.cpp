@@ -2,6 +2,7 @@
 #include "../ui/UIComponents.h"
 #include "DrawingAlgorithms.h"
 #include "GraphicsManager.h"
+#include "FillAlgorithms.h"
 #include <cmath>
 
 // 使用图形管理器
@@ -19,18 +20,21 @@ void InitializeInteractivePage(HWND hWnd) {
     int startY = 10;
     int spacing = 30;
 
-    // 创建模式按钮（使用DrawMode枚举）
+    // 创建模式按钮
     AddModeButton(hWnd, startX, startY, buttonWidth, buttonHeight, L"直线-中点法", MODE_LINE_MIDPOINT);
     AddModeButton(hWnd, startX, startY + spacing, buttonWidth, buttonHeight, L"直线-Bresenham", MODE_LINE_BRESENHAM);
     AddModeButton(hWnd, startX, startY + spacing * 2, buttonWidth, buttonHeight, L"圆-中点法", MODE_CIRCLE_MIDPOINT);
     AddModeButton(hWnd, startX, startY + spacing * 3, buttonWidth, buttonHeight, L"圆-Bresenham", MODE_CIRCLE_BRESENHAM);
     AddModeButton(hWnd, startX, startY + spacing * 4, buttonWidth, buttonHeight, L"矩形", MODE_RECTANGLE);
     AddModeButton(hWnd, startX, startY + spacing * 5, buttonWidth, buttonHeight, L"多段线", MODE_POLYLINE);
+    AddModeButton(hWnd, startX, startY + spacing * 6, buttonWidth, buttonHeight, L"B样条曲线", MODE_BSPLINE);
+    AddModeButton(hWnd, startX, startY + spacing * 7, buttonWidth, buttonHeight, L"扫描线填充", MODE_FILL_SCANLINE);
+    AddModeButton(hWnd, startX, startY + spacing * 8, buttonWidth, buttonHeight, L"栅栏填充", MODE_FILL_FENCE);
 
-    // 添加功能按钮（使用整数ID）
-    AddToolButton(hWnd, startX, startY + spacing * 6, buttonWidth, buttonHeight, L"完成图形", ID_COMPLETE_SHAPE);
-    AddToolButton(hWnd, startX, startY + spacing * 7, buttonWidth, buttonHeight, L"取消绘制", ID_CANCEL_SHAPE);
-    AddToolButton(hWnd, startX, startY + spacing * 8, buttonWidth, buttonHeight, L"清空所有", ID_CLEAR_ALL);
+    // 添加功能按钮
+    AddToolButton(hWnd, startX, startY + spacing * 9, buttonWidth, buttonHeight, L"完成图形", ID_COMPLETE_SHAPE);
+    AddToolButton(hWnd, startX, startY + spacing * 10, buttonWidth, buttonHeight, L"取消绘制", ID_CANCEL_SHAPE);
+    AddToolButton(hWnd, startX, startY + spacing * 11, buttonWidth, buttonHeight, L"清空所有", ID_CLEAR_ALL);
 }
 
 void DrawInteractiveGraphics(HDC hdc) {
@@ -47,26 +51,35 @@ void DrawInteractiveGraphics(HDC hdc) {
     case MODE_CIRCLE_BRESENHAM: wsprintf(modeText, L"当前模式: 圆-Bresenham"); break;
     case MODE_RECTANGLE: wsprintf(modeText, L"当前模式: 矩形"); break;
     case MODE_POLYLINE: wsprintf(modeText, L"当前模式: 多段线"); break;
+    case MODE_BSPLINE: wsprintf(modeText, L"当前模式: B样条曲线"); break;
+    case MODE_FILL_SCANLINE: wsprintf(modeText, L"当前模式: 扫描线填充"); break;
+    case MODE_FILL_FENCE: wsprintf(modeText, L"当前模式: 栅栏填充"); break;
     default: wsprintf(modeText, L"当前模式: 无"); break;
     }
     TextOut(hdc, 150, 65, modeText, wcslen(modeText));
 
-    // 显示绘制状态
+    // 显示绘制状态和提示
     if (g_graphicsManager.IsDrawing()) {
         wchar_t statusText[100];
         wsprintf(statusText, L"正在绘制: %d个点", g_graphicsManager.GetCurrentPoints().size());
         TextOut(hdc, 150, 90, statusText, wcslen(statusText));
+
+        // 各种模式的提示
+        if (g_graphicsManager.GetCurrentMode() == MODE_BSPLINE) {
+            TextOut(hdc, 150, 115, L"提示: B样条曲线需要至少4个控制点", 18);
+        }
+    } else if (g_graphicsManager.GetCurrentMode() == MODE_FILL_SCANLINE ||
+               g_graphicsManager.GetCurrentMode() == MODE_FILL_FENCE) {
+        TextOut(hdc, 150, 90, L"提示: 点击封闭区域内部进行填充", 15);
     }
 
-    // 绘制所有已完成的图形
+    // 绘制所有已完成的图形（只绘制边界，不自动填充）
     for (const auto& shape : g_graphicsManager.GetAllShapes()) {
         if (shape.points.size() < 2) continue;
 
-        // 设置图形颜色
         HPEN hShapePen = CreatePen(PS_SOLID, 2, shape.color);
         HPEN hOldPen = (HPEN)SelectObject(hdc, hShapePen);
 
-        // 根据图形存储的类型绘制
         switch (shape.mode) {
         case MODE_LINE_MIDPOINT:
             if (shape.points.size() == 2)
@@ -107,7 +120,18 @@ void DrawInteractiveGraphics(HDC hdc) {
 
         case MODE_POLYLINE:
             DrawPolyline(hdc, shape.points);
+            // 如果是封闭多边形，连接首尾点
+            if (shape.points.size() >= 3) {
+                MoveToEx(hdc, shape.points.back().x, shape.points.back().y, NULL);
+                LineTo(hdc, shape.points.front().x, shape.points.front().y);
+            }
             break;
+
+        case MODE_BSPLINE:
+            DrawBSpline(hdc, shape.points);
+            break;
+
+        // 填充图形只存储边界点，不在这里绘制填充
         }
 
         SelectObject(hdc, hOldPen);
@@ -169,6 +193,15 @@ void DrawInteractiveGraphics(HDC hdc) {
                 }
                 DrawControlPoints(hdc, currentPoints, RGB(0, 0, 255));
                 break;
+
+            case MODE_BSPLINE:
+                if (currentPoints.size() >= 4) {
+                    DrawBSpline(hdc, currentPoints);
+                } else if (currentPoints.size() >= 2) {
+                    DrawPolyline(hdc, currentPoints);
+                }
+                DrawControlPoints(hdc, currentPoints, RGB(0, 0, 255));
+                break;
             }
 
             SelectObject(hdc, hOldPen);
@@ -196,13 +229,38 @@ LRESULT CALLBACK InteractivePageProc(HWND hWnd, UINT message, WPARAM wParam, LPA
         int y = HIWORD(lParam);
 
         if (g_graphicsManager.GetCurrentMode() != MODE_NONE) {
-            if (!g_graphicsManager.IsDrawing()) {
-                // 开始新的绘制
-                g_graphicsManager.StartNewShape(g_graphicsManager.GetCurrentMode());
+            // 如果是填充模式，执行填充操作
+            if (g_graphicsManager.GetCurrentMode() == MODE_FILL_SCANLINE ||
+                g_graphicsManager.GetCurrentMode() == MODE_FILL_FENCE) {
+
+                // 获取设备上下文用于填充
+                HDC hdc = GetDC(hWnd);
+
+                // 执行填充
+                COLORREF fillColor = (g_graphicsManager.GetCurrentMode() == MODE_FILL_SCANLINE) ?
+                                    RGB(0, 255, 0) : RGB(0, 0, 255);
+
+                bool filled = FillAreaAtPoint(hdc, x, y, g_graphicsManager.GetCurrentMode(), fillColor);
+
+                // 释放设备上下文
+                ReleaseDC(hWnd, hdc);
+
+                if (filled) {
+                    // 填充成功
+                    // 我们可以在这里添加成功提示，或者直接重绘
+                }
+
+                // 强制重绘以显示填充结果
+                InvalidateRect(hWnd, nullptr, TRUE);
             }
-            // 添加点
-            g_graphicsManager.AddPoint(x, y);
-            InvalidateRect(hWnd, nullptr, TRUE);
+            else {
+                // 其他图形模式的正常绘制逻辑
+                if (!g_graphicsManager.IsDrawing()) {
+                    g_graphicsManager.StartNewShape(g_graphicsManager.GetCurrentMode());
+                }
+                g_graphicsManager.AddPoint(x, y);
+                InvalidateRect(hWnd, nullptr, TRUE);
+            }
         }
         break;
     }
@@ -217,20 +275,20 @@ LRESULT CALLBACK InteractivePageProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 
     case WM_COMMAND: {
         int cmd = LOWORD(wParam);
-        if (cmd >= MODE_LINE_MIDPOINT && cmd <= MODE_BSPLINE) {
+        if (cmd >= MODE_LINE_MIDPOINT && cmd <= MODE_FILL_FENCE) {
             // 切换模式
             g_graphicsManager.SwitchMode((DrawMode)cmd);
             InvalidateRect(hWnd, nullptr, TRUE);
         }
-        else if (cmd == ID_COMPLETE_SHAPE) {  // 完成图形
+        else if (cmd == ID_COMPLETE_SHAPE) {
             g_graphicsManager.CompleteShape();
             InvalidateRect(hWnd, nullptr, TRUE);
         }
-        else if (cmd == ID_CANCEL_SHAPE) {    // 取消绘制
+        else if (cmd == ID_CANCEL_SHAPE) {
             g_graphicsManager.CancelShape();
             InvalidateRect(hWnd, nullptr, TRUE);
         }
-        else if (cmd == ID_CLEAR_ALL) {       // 清空所有
+        else if (cmd == ID_CLEAR_ALL) {
             g_graphicsManager.ClearAllShapes();
             InvalidateRect(hWnd, nullptr, TRUE);
         }

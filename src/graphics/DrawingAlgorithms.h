@@ -12,6 +12,6 @@ void DrawCircleMidpoint(HDC hdc, int xc, int yc, int radius);
 void DrawCircleBresenham(HDC hdc, int xc, int yc, int radius);
 void DrawRectangle(HDC hdc, int x1, int y1, int x2, int y2);
 void DrawPolyline(HDC hdc, const std::vector<Point>& points);
-void DrawBSpline(HDC hdc, const std::vector<Point>& points);
+void DrawBSpline(HDC hdc, const std::vector<Point>& points);  // B样条曲线
 
 #endif // DRAWINGALGORITHMS_H

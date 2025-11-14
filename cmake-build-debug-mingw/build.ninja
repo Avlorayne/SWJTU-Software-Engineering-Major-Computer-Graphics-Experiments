@@ -113,6 +113,14 @@ build CMakeFiles/GDItest.dir/src/graphics/GraphicsManager.cpp.obj: CXX_COMPILER_
   OBJECT_DIR = CMakeFiles\GDItest.dir
   OBJECT_FILE_DIR = CMakeFiles\GDItest.dir\src\graphics
 
+build CMakeFiles/GDItest.dir/src/graphics/FillAlgorithms.cpp.obj: CXX_COMPILER__GDItest_unscanned_Debug E$:/Code/C++/GDItest/src/graphics/FillAlgorithms.cpp || cmake_object_order_depends_target_GDItest
+  DEFINES = -DUNICODE -D_UNICODE
+  DEP_FILE = CMakeFiles\GDItest.dir\src\graphics\FillAlgorithms.cpp.obj.d
+  FLAGS = -g -fdiagnostics-color=always
+  INCLUDES = -IE:/Code/C++/GDItest/include
+  OBJECT_DIR = CMakeFiles\GDItest.dir
+  OBJECT_FILE_DIR = CMakeFiles\GDItest.dir\src\graphics
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target GDItest
@@ -121,7 +129,7 @@ build CMakeFiles/GDItest.dir/src/graphics/GraphicsManager.cpp.obj: CXX_COMPILER_
 #############################################
 # Link the executable bin\GDItest.exe
 
-build bin/GDItest.exe: CXX_EXECUTABLE_LINKER__GDItest_Debug CMakeFiles/GDItest.dir/src/main.cpp.obj CMakeFiles/GDItest.dir/src/appcore/GraphicsApp.cpp.obj CMakeFiles/GDItest.dir/src/ui/TabManager.cpp.obj CMakeFiles/GDItest.dir/src/ui/UIComponents.cpp.obj CMakeFiles/GDItest.dir/src/graphics/ExistingGraphics.cpp.obj CMakeFiles/GDItest.dir/src/graphics/InteractiveGraphics.cpp.obj CMakeFiles/GDItest.dir/src/graphics/DrawingAlgorithms.cpp.obj CMakeFiles/GDItest.dir/src/graphics/GraphicsManager.cpp.obj
+build bin/GDItest.exe: CXX_EXECUTABLE_LINKER__GDItest_Debug CMakeFiles/GDItest.dir/src/main.cpp.obj CMakeFiles/GDItest.dir/src/appcore/GraphicsApp.cpp.obj CMakeFiles/GDItest.dir/src/ui/TabManager.cpp.obj CMakeFiles/GDItest.dir/src/ui/UIComponents.cpp.obj CMakeFiles/GDItest.dir/src/graphics/ExistingGraphics.cpp.obj CMakeFiles/GDItest.dir/src/graphics/InteractiveGraphics.cpp.obj CMakeFiles/GDItest.dir/src/graphics/DrawingAlgorithms.cpp.obj CMakeFiles/GDItest.dir/src/graphics/GraphicsManager.cpp.obj CMakeFiles/GDItest.dir/src/graphics/FillAlgorithms.cpp.obj
   FLAGS = -g
   LINK_FLAGS = -mwindows
   LINK_LIBRARIES = -lkernel32  -luser32  -lgdi32  -lcomctl32  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
